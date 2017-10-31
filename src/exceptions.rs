@@ -30,6 +30,9 @@ impl HTTPException {
         };
         HTTPException::new(u16::from(code), msg, extra, msgid)
     }
+    pub fn code(&self) -> u16 { self.code }
+    pub fn message(&self) -> String { self.message.clone() }
+    pub fn extra(&self) -> serde_json::Map<String, serde_json::Value> { self.extra.clone() }
 }
 
 impl From<StatusCode> for HTTPException {
