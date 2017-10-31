@@ -1,1 +1,2 @@
-# cdumay-http-client-rs
+# cdumay-rest-client
+
