@@ -2,7 +2,7 @@
 name = "cdumay_rest_client"
 version = "0.1.0"
 authors = ["Cédric Dumay <cedric.dumay@gmail.com>"]
-license = "MIT/Apache-2.0"
+license = "MIT"
 readme = "README.md"
 repository = "https://github.com/cdumay/cdumay-rest-client-rs"
 homepage =  "https://github.com/cdumay/cdumay-rest-client-rs"
