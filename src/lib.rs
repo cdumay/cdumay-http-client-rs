@@ -6,6 +6,9 @@ extern crate tokio_core;
 extern crate url;
 
 #[macro_use]
+extern crate log;
+
+#[macro_use]
 extern crate serde_derive;
 
 pub mod client;
@@ -30,7 +33,8 @@ fn test_cli() {
     struct Post {
         id: u16,
         title: String,
-        userId: u16,
+        #[serde(rename="userId")]
+        user_id: u16,
         body: String
     }
 

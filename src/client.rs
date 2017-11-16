@@ -11,6 +11,7 @@ use tokio_core::reactor::{Core, Timeout};
 use url::{Url, UrlQuery, ParseError};
 use std::str;
 use std::fmt::Debug;
+use futures::future::Either;
 
 pub trait RestRequest {
     fn do_request<T: Serialize>(&self, method: Method, path: &'static str, params: Option<Vec<(&str, &str)>>, data: Option<T>, headers: Option<Headers>, timeout: Option<u64>) -> Result<Option<String>, HTTPException>;
@@ -64,24 +65,24 @@ impl RestRequest for RESTClient {
             None => String::new()
         });
         let call = client.request(req).and_then(|res| {
-            println!("{} {} {}", method, url.as_str(), res.status());
+            debug!("{} {} {}", method, url.as_str(), res.status());
             res.body().concat2()
         });
 
-        //        let timeout = Timeout::new(Duration::from_secs(t), &handle)?;
-        //        let work = call.select2(timeout).then(|res| match res {
-        //            Ok(Either::A((got, _timeout))) => Ok(got),
-        //            Ok(Either::B((_timeout_error, _get))) => {
-        //                Err(hyper::Error::Io(io::Error::new(
-        //                    io::ErrorKind::TimedOut,
-        //                    "Client timed out while connecting",
-        //                )))
-        //            }
-        //            Err(Either::A((get_error, _timeout))) => Err(get_error),
-        //            Err(Either::B((timeout_error, _get))) => Err(From::from(timeout_error)),
-        //        });
+        let timeout = Timeout::new(Duration::from_secs(t), &handle)?;
+        let work = call.select2(timeout).then(|res| match res {
+            Ok(Either::A((got, _timeout))) => Ok(got),
+            Ok(Either::B((_timeout_error, _get))) => {
+                Err(Error::Io(io::Error::new(
+                    io::ErrorKind::TimedOut,
+                    "Client timed out while connecting",
+                )))
+            }
+            Err(Either::A((get_error, _timeout))) => Err(get_error),
+            Err(Either::B((timeout_error, _get))) => Err(From::from(timeout_error)),
+        });
 
-        let result = core.run(call)?;
+        let result = core.run(work)?;
         match result.is_empty() {
             false => Ok(Some(String::from(str::from_utf8(&result)?))),
             true => Ok(None)
